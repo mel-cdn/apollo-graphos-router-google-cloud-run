@@ -1,0 +1,17 @@
+trigger:
+  branches:
+    include:
+      - develop
+
+stages:
+  - template: templates/terraform-validate.yml
+    parameters:
+      path: "./terraform"
+      dependsOnStages: [ ]
+
+  - template: templates/terraform-deploy.yml
+    parameters:
+      environment: dev
+      gcpVariableGroupName: gcp-playground-dev
+      path: "./terraform"
+      dependsOnStages: [ Validate ]

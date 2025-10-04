@@ -1,0 +1,71 @@
+parameters:
+  - name: environment
+    type: string
+    values:
+      - dev
+      - prod
+
+  - name: gcpVariableGroupName
+    type: string
+
+  - name: path
+    type: string
+    default: "."
+
+  - name: dependsOnStages
+    type: object
+    default: [ ]    # empty = no dependency
+
+stages:
+  - stage: TerraformDeployment
+    displayName: "Terraform Deployment"
+    ${{ if ne(length(parameters.dependsOnStages), 0) }}:
+      dependsOn: ${{ parameters.dependsOnStages }}
+
+    jobs:
+      - deployment: Deployment
+        displayName: "Deployment (${{ parameters.environment }})"
+        environment: ${{ parameters.environment }}
+        pool:
+          vmImage: "ubuntu-latest"
+        variables:
+          - group: ${{ parameters.gcpVariableGroupName }}
+          - group: common
+
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - script: |
+                    echo "$(GCP_DEPLOYER_KEY)" > $(Pipeline.Workspace)/gcp-key.json
+                    echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(Pipeline.Workspace)/gcp-key.json"
+                  displayName: "Write GCP key file"
+
+                - script: gcloud auth activate-service-account --key-file=$(GOOGLE_APPLICATION_CREDENTIALS)
+                  displayName: "Authenticate to GCP"
+
+                - task: TerraformInstaller@1
+                  displayName: "Install Terraform"
+                  inputs:
+                    terraformVersion: "1.9.5"
+
+                - script: |
+                    terraform init --backend-config="bucket=$(TF_BACKEND_GCS_BUCKET)"
+                  displayName: "Terraform Init"
+                  workingDirectory: ${{ parameters.path }}
+
+                - script: |
+                    terraform plan \
+                      -var="project_prefix=$(GCP_PREFIX)" \
+                      -var="environment=$(ENVIRONMENT)" \
+                      -var="region=$(GCP_REGION)" \
+                      -var="root_domain_name=$(PLAYGROUND_DOMAIN_NAME)" \
+                      -out=tfplan
+                  displayName: "Terraform Plan"
+                  workingDirectory: ${{ parameters.path }}
+
+                - script: |
+                    terraform apply -auto-approve tfplan
+                  displayName: "Terraform Apply"
+                  workingDirectory: ${{ parameters.path }}

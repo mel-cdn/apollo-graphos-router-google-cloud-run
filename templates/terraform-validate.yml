@@ -1,0 +1,52 @@
+parameters:
+  parameters:
+    - name: dependsOnStages
+      type: object
+      default: [ ]    # empty = no dependency
+
+    - name: path
+      type: string
+      default: "."
+
+stages:
+  - stage: Validate
+    displayName: "Terraform Validate"
+    ${{ if ne(length(parameters.dependsOnStages), 0) }}:
+      dependsOn: ${{ parameters.dependsOnStages }}
+
+    jobs:
+      - job: Validate
+        displayName: "Validate Terraform Files"
+        pool:
+          vmImage: "ubuntu-latest"
+
+        steps:
+          - task: TerraformInstaller@1
+            displayName: "Install Terraform"
+            inputs:
+              terraformVersion: "1.9.5"
+
+          - script: terraform init -backend=false
+            displayName: "Terraform Init (no backend)"
+            workingDirectory: ${{ parameters.path }}
+
+
+          - script: terraform fmt -check -recursive
+            displayName: "Terraform Format Check"
+            workingDirectory: ${{ parameters.path }}
+
+
+          - script: terraform validate
+            displayName: "Terraform Validate"
+            workingDirectory: ${{ parameters.path }}
+
+          - script: |
+              curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+              tflint --version
+            displayName: "Install Terraform Lint"
+            workingDirectory: ${{ parameters.path }}
+
+
+          - script: tflint --recursive
+            displayName: "Run Terraform Lint"
+            workingDirectory: ${{ parameters.path }}
