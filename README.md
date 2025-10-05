@@ -14,10 +14,10 @@ deployment [guide](https://www.apollographql.com/docs/graphos/routing/self-hoste
 - ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?logo=terraform&logoColor=white) Infrastructure as Code via Terraform
 - ![Azure DevOps Pipeline](https://img.shields.io/badge/AzureDevOps-Pipelines-0078D4?logo=microsoft-azure&logoColor=white) Automated CI/CD using Azure DevOps Pipelines (Terraform validation + deployment)
 
+---
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 Before proceeding, ensure the following are installed and configured:
 
 - **Google Cloud Project**
@@ -31,10 +31,10 @@ Before proceeding, ensure the following are installed and configured:
     - Store these values to your GCP Secret Manager
         - `apollo-api-key` -> APOLLO_KEY
             - e.g. service:<graph-name>:<unique-key>
-        - `apollograph-id` -> APOLLO_GRAPH_REF (e.g. `<graph-name>@current`)
+        - `apollograph-id` -> APOLLO_GRAPH_REF (e.g. `<graph-name>@current`) 
+    - This [repository](https://github.com/mel-cdn/python-strawberry-graphql-fastapi-apollo.git) provides the infrastructure and pipeline setup needed to deploy and publish a **Subgraph** to an **Apollo Supergraph**
 
 ### Authenticate Google Cloud Credentials
-
 ```bash
 # Authenticate your GCP account
 gcloud init
@@ -46,8 +46,14 @@ gcloud config set project <my-project-id>
 gcloud auth application-default login
 ```
 
-### Deployment via Terraform
+### Installation
+```bash
+# Clone repository
+git clone https://github.com/mel-cdn/apollo-graphos-router-google-cloud-run.git
+cd pg-apollo-graphos-router
+```
 
+### Deployment via Terraform
 ```bash
 # Move to Terraform path
 cd ./terraform
@@ -74,7 +80,6 @@ terraform apply tfplan
 ```
 
 ### Publish Subgraph to Supergraph
-
 ```bash
 APOLLO_KEY=<APOLLO_KEY> rover subgraph publish <APOLLO_GRAPH_REF> \
   --schema="./tmp/schema.graphql" \
