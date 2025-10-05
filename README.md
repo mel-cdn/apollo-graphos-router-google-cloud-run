@@ -32,7 +32,7 @@ Before proceeding, ensure the following are installed and configured:
         - `apollo-api-key` -> APOLLO_KEY
             - e.g. service:<graph-name>:<unique-key>
         - `apollograph-id` -> APOLLO_GRAPH_REF (e.g. `<graph-name>@current`) 
-    - This [repository](https://github.com/mel-cdn/python-strawberry-graphql-fastapi-apollo.git) provides the infrastructure and pipeline setup needed to deploy and publish a **Subgraph** to an **Apollo Supergraph**
+    - This [repository](https://github.com/mel-cdn/python-strawberry-graphql-fastapi-apollo) provides the infrastructure and pipeline setup needed to deploy and publish a **Subgraph** to an **Apollo Supergraph**
 
 ### Authenticate Google Cloud Credentials
 ```bash
@@ -50,7 +50,7 @@ gcloud auth application-default login
 ```bash
 # Clone repository
 git clone https://github.com/mel-cdn/apollo-graphos-router-google-cloud-run.git
-cd pg-apollo-graphos-router
+cd apollo-graphos-router-google-cloud-run
 ```
 
 ### Deployment via Terraform
